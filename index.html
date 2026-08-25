@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小組討論審題四步曲 — 選擇慶祝活動</title>
+    <style>
+        /* [保留原有的全域設計與鮮豔色彩] */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(74, 20, 140, 0.20);
+            padding: 30px 35px 40px;
+            border: 2px solid #00BCD4;
+        }
+        h1 {
+            font-size: 28px;
+            color: #4A148C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 12px;
+            border-bottom: 3px solid #E1BEE7;
+            padding-bottom: 18px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 16px;
+            font-weight: 400;
+            color: #7E57C2;
+            background: #F3E5F5;
+            padding: 6px 18px;
+            border-radius: 30px;
+            border: 1px solid #CE93D8;
+        }
+        
+        /* 返回上一關按鈕樣式 */
+        .back-btn {
+            background: #F5F5F5;
+            border: 2px solid #B0BEC5;
+            color: #455A64;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+        }
+        .back-btn:hover {
+            background: #E0E0E0;
+            color: #212121;
+            border-color: #90A4AE;
+            transform: translateY(-2px);
+        }
+
+        .step-indicator { display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+        .step-btn {
+            padding: 10px 24px; border: 2px solid #FFF176; background: #FFF9C4;
+            border-radius: 50px; font-weight: 600; font-size: 15px; color: #D32F2F;
+            cursor: pointer; transition: 0.2s; flex: 1 0 auto; text-align: center;
+        }
+        .step-btn.active { background: #FFD600; border-color: #FFD600; color: white; box-shadow: 0 4px 12px rgba(255, 214, 0, 0.4); }
+        .step-btn.done { border-color: #2E7D32; color: #1B5E20; background: #C8E6C9; }
+        .step-btn:hover:not(.active) { background: #FFFDE7; }
+
+        .question-panel {
+            background: #FAFAFA; border-radius: 20px; padding: 20px 24px;
+            margin-bottom: 30px; border: 2px solid #B0BEC5; box-shadow: inset 0 0 0 1px #E0E0E0;
+        }
+        .question-panel h2 { font-size: 20px; color: #01579B; margin-bottom: 8px; }
+        .question-panel .scenario {
+            background: #F5F5F5; padding: 14px 18px; border-radius: 12px;
+            margin: 12px 0; border-left: 6px solid #FBC02D; font-size: 15px; line-height: 1.7; color: #424242;
+        }
+        .question-panel .task-list { margin: 12px 0 16px 0; padding-left: 22px; font-size: 15px; line-height: 1.8; color: #212121; }
+        
+        .ref-table { overflow-x: auto; margin: 12px 0 0 0; font-size: 14px; }
+        .ref-table table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); }
+        .ref-table th { background: #01579B; color: white; padding: 10px 12px; text-align: center; font-weight: 700; }
+        /* 新增：表格標題內圖片的樣式 */
+        .ref-table th img { max-width: 100%; height: auto; max-height: 120px; border-radius: 8px; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); object-fit: cover; }
+        .ref-table td { border: 1px solid #CFD8DC; padding: 10px 12px; vertical-align: top; background: #FAFAFA; }
+        .ref-table .label { background: #B2EBF2; font-weight: 700; color: #00796B; white-space: nowrap; }
+        .ref-table ul { margin: 0; padding-left: 18px; }
+
+        .step-panel { display: none; animation: fadeUp 0.3s ease; }
+        .step-panel.active { display: block; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
+
+        .section-title { font-size: 18px; font-weight: 700; color: #D32F2F; margin-bottom: 18px; border-bottom: 2px dashed #EF9A9A; padding-bottom: 8px; }
+
+        /* 第一關互動特效 CSS */
+        .progress-container { width: 100%; height: 12px; background: #E0E0E0; border-radius: 10px; margin-bottom: 20px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #FFD600, #FBC02D); width: 0%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        .shake-anim { animation: shake 0.4s ease; border-color: #C62828 !important; }
+        .pop-anim { animation: pop 0.4s ease; border-color: #2E7D32 !important; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2); }
+
+        .judge-item {
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap; background: #FAFAFA;
+            padding: 16px 20px; border-radius: 16px; border: 2px solid #EF9A9A; margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        .judge-item .text { flex: 1; font-weight: 600; min-width: 160px; color: #424242; font-size: 16px; }
+        .judge-item .btns { display: flex; gap: 10px; }
+        .judge-item .btns button {
+            padding: 8px 26px; border-radius: 30px; border: 2px solid #FFF176; background: white;
+            font-weight: 700; cursor: pointer; transition: 0.2s; color: #D32F2F; font-size: 15px;
+        }
+        .judge-item .btns button:hover:not(:disabled) { background: #FFFDE7; transform: translateY(-2px); }
+        .judge-item .btns button.correct { border-color: #2E7D32; background: #C8E6C9; color: #1B5E20; cursor: default; transform: none; }
+        .judge-item .btns button.wrong { border-color: #C62828; background: #FFEBEE; color: #B71C1C; cursor: default; transform: none; }
+        .judge-item .btns button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .explanation {
+            width: 100%; margin-top: 10px; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500;
+            display: none; animation: fadeUp 0.3s ease;
+        }
+        .explanation.show { display: block; }
+        .explanation.correct-exp { background: #E8F5E9; color: #1B5E20; border-left: 5px solid #2E7D32; }
+        .explanation.wrong-exp { background: #FFEBEE; color: #B71C1C; border-left: 5px solid #C62828; }
+
+        /* 第二關分組題目框設計 */
+        .statement-item { background: #FAFAFA; border: 2px solid #EF9A9A; border-radius: 16px; padding: 12px 18px; margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .statement-item.group-pink { border-color: #F48FB1; border-width: 2px; }
+        .statement-item.group-blue { border-color: #64B5F6; border-width: 2px; }
+        .statement-item.group-green { border-color: #81C784; border-width: 2px; }
+        .statement-item.group-yellow { border-color: #FFF176; border-width: 2px; }
+
+        .statement-item .s-text { flex: 2; min-width: 180px; font-weight: 500; color: #424242; }
+        .statement-item select { padding: 6px 12px; border-radius: 30px; border: 2px solid #FFF176; background: white; font-weight: 500; cursor: pointer; min-width: 100px; color: #D32F2F; }
+        .statement-item select:disabled { opacity: 0.6; }
+        .statement-item .s-feedback { font-weight: 700; min-width: 70px; }
+        .statement-item.correct-row { background: #C8E6C9 !important; border-color: #2E7D32 !important; }
+        .statement-item.wrong-row { background: #FFEBEE !important; border-color: #C62828 !important; }
+
+        .action-bar { margin-top: 30px; padding-top: 25px; border-top: 2px solid #EF9A9A; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .btn-primary { background: linear-gradient(135deg, #0288D1, #01579B); color: white; border: none; padding: 12px 36px; border-radius: 60px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.15s; box-shadow: 0 4px 14px rgba(2, 136, 209, 0.35); }
+        .btn-primary:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 6px 20px rgba(2, 136, 209, 0.5); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-secondary { background: #E1F5FE; color: #01579B; border: 2px solid #0288D1; padding: 12px 28px; border-radius: 60px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.1s; }
+        .btn-secondary:hover { background: #B3E5FC; }
+        .score-box { background: #E1F5FE; padding: 8px 22px; border-radius: 40px; font-weight: 700; color: #01579B; border: 1px solid #0288D1; }
+        .reset-link { color: #01579B; cursor: pointer; text-decoration: underline; font-size: 14px; font-weight: 600; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: white; max-width: 600px; width: 90%; border-radius: 28px; padding: 30px 35px 35px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); border: 3px solid #4A148C; position: relative; animation: modalPop 0.3s ease; }
+        @keyframes modalPop { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .modal-close { position: absolute; top: 12px; right: 18px; font-size: 28px; font-weight: 700; color: #4A148C; cursor: pointer; background: none; border: none; line-height: 1; transition: 0.15s; }
+        .modal-close:hover { transform: rotate(90deg); color: #7E57C2; }
+        .modal-box h2 { color: #4A148C; font-size: 24px; margin-bottom: 16px; border-bottom: 2px solid #E1BEE7; padding-bottom: 10px; }
+        .modal-box p { font-size: 18px; line-height: 1.8; color: #212121; font-weight: 500; }
+        .modal-box .highlight { color: #FFC107; font-weight: 700; }
+
+        /* 第三關「互動狙擊場」專屬炫酷遊戲化 CSS 特效 */
+        .shooting-arena {
+            background: radial-gradient(circle, #37474F 0%, #212121 100%);
+            border-radius: 24px; padding: 25px 30px; color: white; text-align: center;
+            position: relative; overflow: hidden; border: 4px solid #FFD600;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6); margin-bottom: 15px;
+        }
+        .arena-status {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; font-weight: 700; border-bottom: 2px dashed #546E7A; padding-bottom: 12px;
+        }
+        .arena-progress { background: #FFD600; color: #212121; padding: 4px 16px; border-radius: 20px; font-size: 14px; box-shadow: 0 2px 6px rgba(255,214,0,0.3); }
+        .arena-question-box { min-height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
+        .arena-question-text { font-size: 21px; font-weight: 700; color: #FFF; text-shadow: 0 2px 8px rgba(0,0,0,0.9); line-height: 1.6; }
+        .targets-range { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; min-height: 190px; align-items: center; }
+        
+        .shooting-target {
+            width: 150px; height: 150px; border-radius: 50%;
+            background: radial-gradient(circle, #D32F2F 20%, #FFFFFF 21%, #FFFFFF 40%, #D32F2F 41%, #D32F2F 60%, #FFFFFF 61%, #FFFFFF 80%, #D32F2F 81%);
+            border: 4px solid #111; box-shadow: 0 8px 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.4);
+            cursor: crosshair; display: flex; align-items: center; justify-content: center; padding: 10px;
+            transition: transform 0.2s, box-shadow 0.2s; position: relative; outline: none;
+        }
+        
+        .targets-range .shooting-target:nth-child(1) { animation: targetFloat 3s ease-in-out infinite; }
+        .targets-range .shooting-target:nth-child(2) { animation: targetFloat 2.6s ease-in-out infinite 0.3s; }
+        .targets-range .shooting-target:nth-child(3) { animation: targetFloat 3.4s ease-in-out infinite 0.6s; }
+        @keyframes targetFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .shooting-target:hover:not(:disabled) {
+            animation-play-state: paused !important; transform: scale(1.12) translateY(-4px) !important;
+            box-shadow: 0 0 25px rgba(255, 214, 0, 0.6), 0 12px 24px rgba(0,0,0,0.6);
+        }
+        .shooting-target .target-label {
+            color: #212121; font-weight: 800; font-size: 15px; background: rgba(255, 255, 255, 0.95);
+            padding: 6px 12px; border-radius: 8px; border: 2px solid #212121; text-align: center;
+            pointer-events: none; box-shadow: 0 3px 6px rgba(0,0,0,0.3); max-width: 120px; line-height: 1.4;
+        }
+        
+        .shooting-target.hit-correct {
+            background: radial-gradient(circle, #2E7D32 20%, #C8E6C9 21%, #C8E6C9 40%, #2E7D32 41%, #2E7D32 60%, #C8E6C9 61%, #C8E6C9 80%, #2E7D32 81%);
+            animation: targetPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+        }
+        .shooting-target.hit-correct .target-label { background: #E8F5E9; color: #1B5E20; border-color: #2E7D32; }
+        
+        .shooting-target.hit-wrong {
+            background: radial-gradient(circle, #555 20%, #BBB 21%, #BBB 40%, #555 41%, #555 60%, #BBB 61%, #BBB 80%, #555 81%);
+            animation: targetStrikeShake 0.4s ease forwards !important; opacity: 0.5;
+        }
+        .shooting-target.hit-wrong .target-label { background: #FFEBEE; color: #B71C1C; border-color: #C62828; text-decoration: line-through; }
+        
+        .shooting-target.reveal-correct {
+            background: radial-gradient(circle, #2E7D32 20%, #C8E6C9 21%, #C8E6C9 40%, #2E7D32 41%, #2E7D32 60%, #C8E6C9 61%, #C8E6C9 80%, #2E7D32 81%);
+            border-color: #FFD600; box-shadow: 0 0 25px #FFD600; animation: none !important;
+        }
+        .shooting-target:disabled { cursor: not-allowed; animation-play-state: paused !important; }
+        
+        @keyframes targetPop { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } }
+        @keyframes targetStrikeShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px) rotate(-4deg); }
+            40%, 80% { transform: translateX(8px) rotate(4deg); }
+        }
+        .arena-controls { margin-top: 15px; min-height: 45px; display: flex; justify-content: center; align-items: center; }
+
+        /* ================= 第四關比較與總結 CSS ================= */
+        .compare-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+        .compare-card { flex: 1; min-width: 280px; background: #fff; border-radius: 16px; border: 2px solid #E0E0E0; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.06); transition: transform 0.3s ease; }
+        .compare-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+        .cc-header { padding: 16px; text-align: center; font-weight: 800; font-size: 18px; color: white; letter-spacing: 1px; }
+        .cc-open { background: linear-gradient(135deg, #F06292, #E91E63); }
+        .cc-street { background: linear-gradient(135deg, #4FC3F7, #0288D1); }
+        .cc-drink { background: linear-gradient(135deg, #81C784, #388E3C); }
+        .cc-body { padding: 20px; background: #FAFAFA; height: calc(100% - 55px); }
+        .cc-section { margin-bottom: 18px; background: white; padding: 12px; border-radius: 12px; border: 1px solid #EEEEEE; }
+        .cc-section h4 { font-size: 15px; color: #424242; margin-bottom: 10px; border-bottom: 2px dashed #E0E0E0; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .cc-section ul { padding-left: 22px; margin: 0; font-size: 14px; color: #555; line-height: 1.6; }
+        .cc-section ul li { margin-bottom: 6px; }
+        /* ========================================================= */
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+
+    <h1>🧩 小組討論審題四步曲 <small>選擇慶祝活動</small></h1>
+
+    <div class="step-indicator" id="stepIndicator">
+        <div class="step-btn active" data-step="1">❶ 確定討論核心</div>
+        <div class="step-btn" data-step="2">❷ 分析優缺點</div>
+        <div class="step-btn" data-step="3">❸ 尋找活動之「最」</div>
+        <div class="step-btn" data-step="4">❹ 比較與總結</div>
+    </div>
+
+    <div class="question-panel" id="questionPanel">
+        <h2>📋 討論題目：選擇慶祝活動</h2>
+        <div class="scenario">
+            <strong>情景：</strong>你是香港健樂汽水有限公司市場推廣部主任。公司計劃舉辦慶祝活動，慶祝公司成立 50 週年，並推廣產品。現在，部門經理請你和其他同事討論並選擇最合適的慶祝活動，稍後向他報告。
+        </div>
+        <div>
+            <strong>任務：</strong>
+            <ol class="task-list">
+                <li>根據參考資料，選擇你認為最合適的慶祝活動，並解釋原因；</li>
+                <li>說明該活動如何達到目的：慶祝公司成立 50 週年，推廣產品；</li>
+                <li>回應與會者的發言；</li>
+                <li>嘗試與其他組員達成共識。</li>
+            </ol>
+        </div>
+        <div class="ref-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>活動</th>
+                        <th>汽水廠開放日<br><img src="p2.jpg" alt="汽水廠開放日"></th>
+                        <th>街頭同樂日<br><img src="p3.jpg" alt="街頭同樂日"></th>
+                        <th>汽水競飲大賽<br><img src="p4.jpg" alt="汽水競飲大賽"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="label">日期</td><td>8月22-23日 (六和日)</td><td>8月9日 (日)</td><td>8月29日 (六)</td></tr>
+                    <tr><td class="label">時間</td><td>10:00-17:00</td><td>10:00-13:00</td><td>14:00-17:00</td></tr>
+                    <tr><td class="label">地點</td><td>沙田汽水廠</td><td>尖沙咀碼頭</td><td>維多利亞公園球場</td></tr>
+                    <tr><td class="label">詳情</td>
+                        <td><ul><li>參觀公司，專人導賞</li><li>認識公司歷史</li><li>生產及包裝過程</li><li>汽水瓶DIY</li><li>購買特別版紀念品</li><li>贈飲</li></ul></td>
+                        <td><ul><li>魔術表演</li><li>5個攤位遊戲</li><li>與巨型汽水模型合照</li><li>派發紀念品、贈飲</li><li>飲料大特賣 (6折)</li></ul></td>
+                        <td><ul><li>獎項：冠、亞、季軍</li><li>獎金：一萬、五千、三千</li><li>表演嘉賓助興 (待定)</li><li>歌曲及舞蹈</li><li>網上平台直播</li></ul></td>
+                    </tr>
+                    <tr><td class="label">名額</td><td>120人/日 (兩個月前報名)</td><td>不限</td><td>參賽者20人 (初賽兩週前完成)<br>觀眾：不限</td></tr>
+                    <tr><td class="label">開支</td><td>$30,000</td><td>$60,000</td><td>$100,000</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="game-area">
+
+        <div class="step-panel active" id="step1">
+            <div class="section-title">❶ 確定討論核心 — 判斷下列陳述是否為本次討論的核心目的</div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="step1Progress"></div>
+            </div>
+
+            <div id="judgeContainer"></div>
+            
+            <div id="step1Feedback" style="margin-top:16px;font-weight:700;text-align:center;min-height:30px;"></div>
+            <div class="action-bar">
+                <span class="score-box" id="scoreDisplay">⭐ 得分：0 / 3</span>
+                <button class="btn-primary" id="nextToStep2" disabled>進入下一步 ➜</button>
+            </div>
+        </div>
+
+        <div class="step-panel" id="step2">
+            <button class="back-btn" id="btnBackTo1">🔙 重做上一關</button>
+            
+            <div class="section-title">❷ 分析優缺點 — 每項陳述屬於哪個活動？是優點還是缺點？</div>
+            <div id="statementsContainer"></div>
+            <div id="step2Feedback" style="margin-top:16px;font-weight:700;text-align:center;min-height:30px;"></div>
+            <div class="action-bar">
+                <button class="btn-secondary" id="checkStep2">✔️ 驗證全部答案</button>
+                <button class="btn-primary" id="nextToStep3" disabled>進入下一步 ➜</button>
+            </div>
+        </div>
+
+        <div class="step-panel" id="step3">
+            <button class="back-btn" id="btnBackTo2">🔙 重做上一關</button>
+            
+            <div class="section-title">❸ 尋找活動之「最」 — 根據活動資料，選出符合描述的活動</div>
+            <div id="quizContainer"></div>
+            <div id="step3Feedback" style="margin-top:16px;font-weight:700;text-align:center;min-height:30px;"></div>
+            <div class="action-bar">
+                <span class="reset-link" id="redoStep3Btn">🔄 重做第三關</span>
+                <button class="btn-primary" id="nextToStep4" disabled>進入比較與總結 ➜</button>
+            </div>
+        </div>
+
+        <div class="step-panel" id="step4">
+            <button class="back-btn" id="btnBackTo3">🔙 重做上一關</button>
+            
+            <div class="section-title">❹ 比較與總結 — 綜合活動之最與優缺點</div>
+            
+            <div class="compare-grid">
+                <div class="compare-card">
+                    <div class="cc-header cc-open">汽水廠開放日</div>
+                    <div class="cc-body">
+                        <div class="cc-section">
+                            <h4>🏆 活動之最</h4>
+                            <ul>
+                                <li>時間跨度最長</li>
+                                <li>開支成本最低</li>
+                            </ul>
+                        </div>
+                        <div class="cc-section">
+                            <h4>✅ 優點</h4>
+                            <ul>
+                                <li>專人導賞：具教育性，強化品牌專業性</li>
+                                <li>DIY體驗：創造個人化紀念品</li>
+                                <li>限量紀念品：具收藏價值</li>
+                                <li>贈飲：聽完歷史再喝，建立深層情感連結</li>
+                            </ul>
+                        </div>
+                        <div class="cc-section">
+                            <h4>❌ 缺點</h4>
+                            <ul>
+                                <li>名額有限（120人/日），推廣覆蓋面不足</li>
+                                <li>無即時銷售優惠，產品推廣直接性較弱</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="compare-card">
+                    <div class="cc-header cc-street">街頭同樂日</div>
+                    <div class="cc-body">
+                        <div class="cc-section">
+                            <h4>🏆 活動之最</h4>
+                            <ul>
+                                <li>參與人數不受限制</li>
+                                <li>公眾曝光率最高</li>
+                            </ul>
+                        </div>
+                        <div class="cc-section">
+                            <h4>✅ 優點</h4>
+                            <ul>
+                                <li>魔術表演與攤位遊戲：歡樂氣氛、有趣</li>
+                                <li>巨型模型合照：利於社交媒體傳播</li>
+                                <li>即場優惠：6折特賣，直接刺激銷售</li>
+                                <li>派發紀念品、贈飲：體驗味道，轉化為潛在消費者</li>
+                            </ul>
+                        </div>
+                        <div class="cc-section">
+                            <h4>❌ 缺點</h4>
+                            <ul>
+                                <li>活動形式較常見，缺乏獨特記憶點</li>
+                                <li>無後續延續性</li>
+                                <li>天氣因素影響大（戶外）</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compare-card">
+                    <div class="cc-header cc-drink">汽水競飲大賽</div>
+                    <div class="cc-body">
+                        <div class="cc-section">
+                            <h4>🏆 活動之最</h4>
+                            <ul>
+                                <li>成本最高，預算負擔最重</li>
+                            </ul>
+                        </div>
+                        <div class="cc-section">
+                            <h4>✅ 優點</h4>
+                            <ul>
+                                <li>高額獎金：吸引參賽者及媒體關注</li>
+                                <li>競技元素：比賽性質，緊張刺激具觀賞性</li>
+                                <li>表演嘉賓+直播：娛樂性強</li>
+                                <li>初賽+決賽：延續話題熱度</li>
+                            </ul>
+                        </div>
+                        <div class="cc-section">
+                            <h4>❌ 缺點</h4>
+                            <ul>
+                                <li>參賽者僅20人，焦點過度集中於少數人</li>
+                                <li>競飲可能有健康疑慮，引發負面觀感</li>
+                                <li>籌備複雜（初賽、嘉賓、直播）</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-bar" style="justify-content: center; flex-direction: column; gap: 15px;">
+                <div class="score-box" style="font-size: 18px; padding: 12px 30px; background:#C8E6C9; color:#1B5E20; border-color:#2E7D32;">
+                    🎉 恭喜你完成所有分析！請根據上方圖表與組員討論，達成最終選擇共識。
+                </div>
+                <span class="reset-link" style="cursor:pointer; color:#0288D1;" onclick="location.reload()">🔄 重新挑戰全關卡</span>
+            </div>
+        </div>
+        </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <button class="modal-close" id="modalClose">✕</button>
+        <h2 id="modalTitle">🎉 關卡完成！</h2>
+        <p id="modalContent"></p>
+    </div>
+</div>
+
+<script>
+    (function() {
+        let currentStep = 1;
+        let score = 0;
+        const totalSteps = 3; 
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        const judgeData = [
+            { id: 0, text: '推廣產品', correct: true, explanation: '🎯 沒錯！情景明確提到「推廣產品」是活動的兩大任務之一。' },
+            { id: 1, text: '增加員工福利', correct: false, explanation: '💡 題目並未提及員工福利，討論時千萬不要自行聯想、偏離主題喔！' },
+            { id: 2, text: '降低生產成本', correct: false, explanation: '📉 這屬於內部營運範疇，與本次「市場推廣」及「對外慶祝」的目的無關。' },
+            { id: 3, text: '慶祝公司成立 50 週年', correct: true, explanation: '🎯 答對了！這是情景中直接指出的活動核心目標。' },
+            { id: 4, text: '擴大海外市場佔合率', correct: false, explanation: '🌍 公司背景在香港，參考資料也全都是本地活動，並未提及海外市場。' }
+        ];
+        let judgeAnswered = {};
+
+        const statementsRaw = [
+            { id: 0, text: '專人導賞：讓公眾深入生產核心，具教育性，強化品牌專業性', activity: 'open', type: '優點' },
+            { id: 1, text: 'DIY體驗：汽水瓶設計，創造個人化紀念品', activity: 'open', type: '優點' },
+            { id: 2, text: '限量紀念品：獨家販售，具收藏價值', activity: 'open', type: '優點' },
+            { id: 3, text: '贈飲：聽完50年歷史再喝，汽水變成「有故事的滋味」，情感連結最深。', activity: 'open', type: '優點' },
+            { id: 4, text: '名額有限（120人/日），受眾狹窄，推廣覆蓋面不足', activity: 'open', type: '缺點' },
+            { id: 6, text: '無即時銷售優惠，產品推廣直接性較弱', activity: 'open', type: '缺點' },
+            { id: 7, text: '魔術表演與攤位遊戲：歡樂氣氛、有趣', activity: 'street', type: '優點' },
+            { id: 8, text: '巨型模型合照：具視覺衝擊，利於社交媒體傳播', activity: 'street', type: '優點' },
+            { id: 9, text: '即場優惠：6折特賣，直接刺激銷售', activity: 'street', type: '優點' },
+            { id: 10, text: '派發紀念品、贈飲：讓遊客體驗味道，記住品牌，轉化為潛在消費者', activity: 'street', type: '優點' },
+            { id: 11, text: '活動形式較常見，缺乏獨特記憶點', activity: 'street', type: '缺點' },
+            { id: 12, text: '成本中等（$60,000），但無後續延續性', activity: 'street', type: '缺點' },
+            { id: 13, text: '天氣因素影響大（戶外）', activity: 'street', type: '缺點' },
+            { id: 14, text: '高額獎金：吸引參賽者及媒體關注', activity: 'drink', type: '優點' },
+            { id: 15, text: '競技元素：比賽性質，緊張刺激，具觀賞性', activity: 'drink', type: '優點' },
+            { id: 16, text: '表演嘉賓+直播：娛樂性強', activity: 'drink', type: '優點' },
+            { id: 17, text: '初賽+決賽：延續話題熱度', activity: 'drink', type: '優點' },
+            { id: 18, text: '參賽者僅20人，焦點過度集中於少數人', activity: 'drink', type: '缺點' },
+            { id: 19, text: '競飲可能有健康疑慮，引發負面觀感', activity: 'drink', type: '缺點' },
+            { id: 20, text: '籌備複雜（初賽、嘉賓、直播）', activity: 'drink', type: '缺點' }
+        ];
+        let statementsData = shuffleArray(statementsRaw);
+        let statementSelections = {};
+        let step2Verified = false;
+
+        const quizData = [
+            { id: 0, text: '哪個活動的「時間跨度最長」？', options: ['汽水廠開放日', '街頭同樂日', '汽水競飲大賽'], answer: '汽水競飲大賽' },
+            { id: 1, text: '哪個活動的「開支成本最低」？', options: ['汽水廠開放日', '街頭同樂日', '汽水競飲大賽'], answer: '汽水廠開放日' },
+            { id: 2, text: '哪個活動的「參與人數不受限制」（不限名額）？', options: ['汽水廠開放日', '街頭同樂日', '汽水競飲大賽'], answer: '街頭同樂日' },
+            { id: 3, text: '哪個活動的「公眾曝光率最高」？', options: ['汽水廠開放日', '街頭同樂日', '汽水競飲大賽'], answer: '街頭同樂日' },
+            { id: 4, text: '哪個活動的「成本最高」，預算負擔最重？', options: ['汽水廠開放日', '街頭同樂日', '汽水競飲大賽'], answer: '汽水競飲大賽' }
+        ];
+        let quizAnswered = {};
+
+        const stepPanels = document.querySelectorAll('.step-panel');
+        const stepBtns = document.querySelectorAll('.step-btn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+
+        function showModal(step) {
+            let title = '🎉 關卡完成！';
+            let content = '';
+            if (step === 1) content = '確定討論核心：<span class="highlight">題目中的活動目的就是討論核心</span>。';
+            else if (step === 2) content = '分析優缺點：<span class="highlight">重點分析活動詳情，並解釋活動的優點如何達到活動目的</span>。';
+            else if (step === 3) content = '尋找活動之「最」：<span class="highlight">重點分析時間、地點、名額、人手安排、開支等</span>。';
+            modalTitle.textContent = title;
+            modalContent.innerHTML = content;
+            modalOverlay.classList.add('active');
+        }
+
+        function closeModal() { modalOverlay.classList.remove('active'); }
+        modalClose.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+        function updateScoreUI() {
+            if (scoreDisplay) scoreDisplay.textContent = `⭐ 得分：${score} / ${totalSteps}`;
+        }
+
+        function switchStep(step) {
+            currentStep = step;
+            stepPanels.forEach((p, idx) => p.classList.toggle('active', idx === step - 1));
+            stepBtns.forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === step - 1);
+                if (idx < step - 1) btn.classList.add('done');
+                else btn.classList.remove('done');
+            });
+        }
+
+        const judgeContainer = document.getElementById('judgeContainer');
+        const progressBar = document.getElementById('step1Progress');
+        let totalJudgeQuestions = judgeData.length;
+
+        function updateJudgeProgress() {
+            let answeredCount = Object.keys(judgeAnswered).length;
+            let percentage = (answeredCount / totalJudgeQuestions) * 100;
+            progressBar.style.width = percentage + '%';
+        }
+
+        judgeData.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'judge-item';
+            div.dataset.id = d.id;
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'text';
+            textSpan.textContent = d.text;
+
+            const btnDiv = document.createElement('div');
+            btnDiv.className = 'btns';
+            const btnTrue = document.createElement('button');
+            btnTrue.textContent = '正確';
+            const btnFalse = document.createElement('button');
+            btnFalse.textContent = '錯誤';
+
+            const expDiv = document.createElement('div');
+            expDiv.className = 'explanation';
+            expDiv.innerHTML = d.explanation;
+
+            btnDiv.appendChild(btnTrue);
+            btnDiv.appendChild(btnFalse);
+
+            function handleAnswer(isUserSayingTrue, buttonClicked) {
+                if (judgeAnswered[d.id] !== undefined) return; 
+
+                div.classList.remove('shake-anim', 'pop-anim');
+                void div.offsetWidth;
+
+                const isCorrectAnswer = (d.correct === isUserSayingTrue);
+
+                if (isCorrectAnswer) {
+                    buttonClicked.classList.add('correct');
+                    btnTrue.disabled = true; btnFalse.disabled = true;
+                    
+                    div.classList.add('pop-anim');
+                    expDiv.classList.add('show', 'correct-exp');
+                    
+                    judgeAnswered[d.id] = true;
+                    updateJudgeProgress();
+                } else {
+                    buttonClicked.classList.add('wrong');
+                    div.classList.add('shake-anim');
+                    
+                    expDiv.classList.add('show', 'wrong-exp');
+                    expDiv.innerHTML = "❌ 答錯囉！請再試一次。<br>" + d.explanation;
+
+                    setTimeout(() => {
+                        buttonClicked.classList.remove('wrong');
+                        expDiv.classList.remove('show', 'wrong-exp');
+                        expDiv.innerHTML = d.explanation;
+                    }, 1200);
+                    return;
+                }
+
+                const allCorrect = judgeData.every(data => judgeAnswered[data.id] === true);
+                if (allCorrect) {
+                    document.getElementById('step1Feedback').textContent = '🎉 全部正確！核心目的已掌握！';
+                    document.getElementById('step1Feedback').style.color = '#2E7D32';
+                    document.getElementById('nextToStep2').disabled = false;
+                    if (score === 0) { score += 1; updateScoreUI(); }
+                    setTimeout(() => showModal(1), 500);
+                }
+            }
+
+            btnTrue.addEventListener('click', () => handleAnswer(true, btnTrue));
+            btnFalse.addEventListener('click', () => handleAnswer(false, btnFalse));
+
+            div.appendChild(textSpan);
+            div.appendChild(btnDiv);
+            div.appendChild(expDiv);
+            judgeContainer.appendChild(div);
+        });
+
+        document.getElementById('nextToStep2').addEventListener('click', () => switchStep(2));
+
+        const statementsContainer = document.getElementById('statementsContainer');
+        statementsData.forEach((s, index) => {
+            const div = document.createElement('div');
+            
+            let displayNum = index + 1;
+            if (displayNum >= 1 && displayNum <= 5) div.className = 'statement-item group-pink';
+            else if (displayNum >= 6 && displayNum <= 10) div.className = 'statement-item group-blue';
+            else if (displayNum >= 11 && displayNum <= 15) div.className = 'statement-item group-green';
+            else if (displayNum >= 16 && displayNum <= 20) div.className = 'statement-item group-yellow';
+            else div.className = 'statement-item';
+            
+            div.dataset.id = s.id;
+            const textSpan = document.createElement('span');
+            textSpan.className = 's-text';
+            textSpan.textContent = s.text;
+            const actSelect = document.createElement('select');
+            actSelect.innerHTML = `<option value="">— 活動 —</option><option value="open">開放日</option><option value="street">街頭同樂日</option><option value="drink">競飲大賽</option>`;
+            const typeSelect = document.createElement('select');
+            typeSelect.innerHTML = `<option value="">— 優/缺 —</option><option value="優點">優點</option><option value="缺點">缺點</option>`;
+            const fbSpan = document.createElement('span');
+            fbSpan.className = 's-feedback';
+            statementSelections[s.id] = { activity: '', type: '' };
+            actSelect.addEventListener('change', function() { statementSelections[s.id].activity = this.value; });
+            typeSelect.addEventListener('change', function() { statementSelections[s.id].type = this.value; });
+            div.appendChild(textSpan);
+            div.appendChild(actSelect);
+            div.appendChild(typeSelect);
+            div.appendChild(fbSpan);
+            statementsContainer.appendChild(div);
+        });
+
+        document.getElementById('checkStep2').addEventListener('click', function() {
+            if (step2Verified) return;
+            let allCorrect = true;
+            statementsData.forEach(s => {
+                const sel = statementSelections[s.id];
+                
+                let actOk = false;
+                if (s.id === 13) {
+                    actOk = (sel && (sel.activity === 'street' || sel.activity === 'drink'));
+                } else if (s.id === 6) {
+                    actOk = (sel && (sel.activity === 'open' || sel.activity === 'drink'));
+                } else {
+                    actOk = (sel && sel.activity === s.activity);
+                }
+
+                const typeOk = (sel && sel.type === s.type);
+                const row = document.querySelector(`.statement-item[data-id="${s.id}"]`);
+                const fb = row.querySelector('.s-feedback');
+                if (actOk && typeOk) {
+                    row.classList.add('correct-row'); row.classList.remove('wrong-row');
+                    fb.textContent = '✅'; fb.style.color = '#2E7D32';
+                } else {
+                    row.classList.add('wrong-row'); row.classList.remove('correct-row');
+                    fb.textContent = (!actOk && !typeOk) ? '❌ 全錯' : (!actOk) ? '❌ 活動錯' : '❌ 優缺錯';
+                    fb.style.color = '#C62828';
+                    allCorrect = false;
+                }
+            });
+            if (allCorrect) {
+                document.getElementById('step2Feedback').textContent = '🎉 全部 20 題正確！';
+                document.getElementById('step2Feedback').style.color = '#2E7D32';
+                step2Verified = true; document.getElementById('nextToStep3').disabled = false;
+                if (score === 1) { score += 1; updateScoreUI(); }
+                document.querySelectorAll('#statementsContainer select').forEach(sel => sel.disabled = true);
+                showModal(2);
+            } else {
+                document.getElementById('step2Feedback').textContent = '⚠️ 有錯誤，請修正後再驗證。';
+                document.getElementById('step2Feedback').style.color = '#C62828';
+            }
+        });
+
+        document.getElementById('nextToStep3').addEventListener('click', () => { if (step2Verified) switchStep(3); });
+
+        const quizContainer = document.getElementById('quizContainer');
+        let currentQuizIndex = 0;
+
+        function renderShootingArena() {
+            quizContainer.innerHTML = ''; 
+            if (currentQuizIndex >= quizData.length) return;
+            
+            const q = quizData[currentQuizIndex];
+            
+            const arena = document.createElement('div');
+            arena.className = 'shooting-arena';
+            
+            const statusBar = document.createElement('div');
+            statusBar.className = 'arena-status';
+            statusBar.innerHTML = `<span>🎯 狙擊任務鎖定中...</span> <span class="arena-progress">目標：${currentQuizIndex + 1} / ${quizData.length}</span>`;
+            arena.appendChild(statusBar);
+            
+            const qBox = document.createElement('div');
+            qBox.className = 'arena-question-box';
+            const qText = document.createElement('div');
+            qText.className = 'arena-question-text';
+            qText.textContent = q.text;
+            qBox.appendChild(qText);
+            arena.appendChild(qBox);
+            
+            const range = document.createElement('div');
+            range.className = 'targets-range';
+            
+            const shuffledOpts = shuffleArray(q.options);
+            
+            shuffledOpts.forEach(opt => {
+                const targetBtn = document.createElement('button');
+                targetBtn.className = 'shooting-target';
+                targetBtn.dataset.value = opt;
+                
+                const label = document.createElement('div');
+                label.className = 'target-label';
+                label.textContent = opt;
+                targetBtn.appendChild(label);
+                
+                targetBtn.addEventListener('click', function() {
+                    if (quizAnswered[q.id] !== undefined) return; 
+                    
+                    const isCorrect = (opt === q.answer);
+                    const allTargets = range.querySelectorAll('.shooting-target');
+                    
+                    if (isCorrect) {
+                        this.classList.add('hit-correct');
+                        quizAnswered[q.id] = true;
+                        document.getElementById('step3Feedback').textContent = `🎯 完美命中！第 ${q.id+1} 題回答正確！`;
+                        document.getElementById('step3Feedback').style.color = '#2E7D32';
+                    } else {
+                        this.classList.add('hit-wrong');
+                        quizAnswered[q.id] = false;
+                        document.getElementById('step3Feedback').textContent = `❌ 脫靶了！第 ${q.id+1} 題判定錯誤。正確目標是「${q.answer}」。`;
+                        document.getElementById('step3Feedback').style.color = '#C62828';
+                    }
+                    
+                    allTargets.forEach(btn => {
+                        btn.disabled = true;
+                        if (!isCorrect && btn.dataset.value === q.answer) {
+                            btn.classList.add('reveal-correct');
+                        }
+                    });
+                    
+                    const ctrlBox = arena.querySelector('.arena-controls');
+                    
+                    if (currentQuizIndex < quizData.length - 1) {
+                        const nextBtn = document.createElement('button');
+                        nextBtn.className = 'btn-primary';
+                        nextBtn.style.padding = '8px 24px';
+                        nextBtn.style.fontSize = '14px';
+                        nextBtn.textContent = '鎖定下一個目標 ➜';
+                        nextBtn.addEventListener('click', () => {
+                            currentQuizIndex++;
+                            renderShootingArena();
+                        });
+                        ctrlBox.appendChild(nextBtn);
+                    } else {
+                        if (quizData.every(item => quizAnswered[item.id] === true)) {
+                            document.getElementById('step3Feedback').textContent = '🎉 完美清空靶場！請進入比較與總結！';
+                            document.getElementById('step3Feedback').style.color = '#2E7D32';
+                            if (score === 2) { score += 1; updateScoreUI(); }
+                            // 🎯 解鎖進入第四關按鈕
+                            document.getElementById('nextToStep4').disabled = false;
+                            showModal(3);
+                        } else {
+                            // 失敗邏輯：動態生成「重做第三關」按鈕
+                            document.getElementById('step3Feedback').textContent = '⚠️ 任務結束，但有目標遺漏。請重做本關嘗試完美通關！';
+                            document.getElementById('step3Feedback').style.color = '#C62828';
+                            
+                            const redoBtn = document.createElement('button');
+                            redoBtn.className = 'btn-secondary';
+                            redoBtn.style.padding = '8px 24px';
+                            redoBtn.style.fontSize = '14px';
+                            redoBtn.textContent = '🔄 立即重做第三關';
+                            redoBtn.addEventListener('click', () => {
+                                resetStep3();
+                            });
+                            ctrlBox.appendChild(redoBtn);
+                        }
+                    }
+                });
+                
+                range.appendChild(targetBtn);
+            });
+            
+            arena.appendChild(range);
+            
+            const controls = document.createElement('div');
+            controls.className = 'arena-controls';
+            arena.appendChild(controls);
+            
+            quizContainer.appendChild(arena);
+        }
+
+        renderShootingArena();
+
+        // 綁定解鎖的進入第四關按鈕
+        document.getElementById('nextToStep4').addEventListener('click', () => { 
+            if (!document.getElementById('nextToStep4').disabled) switchStep(4); 
+        });
+
+        // 獨立重做第三關按鈕綁定
+        document.getElementById('redoStep3Btn').addEventListener('click', () => {
+            resetStep3();
+        });
+
+        stepBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const target = parseInt(this.dataset.step);
+                if (target === 1) switchStep(1);
+                else if (target === 2 && !document.getElementById('nextToStep2').disabled) switchStep(2);
+                else if (target === 3 && !document.getElementById('nextToStep3').disabled) switchStep(3);
+                // 允許點擊上方按鈕進入第四關
+                else if (target === 4 && !document.getElementById('nextToStep4').disabled) switchStep(4);
+            });
+        });
+
+        // ================= 重做關卡功能邏輯 =================
+        function resetStep1() {
+            judgeAnswered = {};
+            updateJudgeProgress();
+            document.querySelectorAll('.judge-item').forEach(div => {
+                div.classList.remove('shake-anim', 'pop-anim');
+                const btns = div.querySelectorAll('button');
+                btns.forEach(b => {
+                    b.disabled = false;
+                    b.classList.remove('correct', 'wrong');
+                });
+                const exp = div.querySelector('.explanation');
+                exp.classList.remove('show', 'correct-exp', 'wrong-exp');
+            });
+            document.getElementById('step1Feedback').textContent = '';
+            document.getElementById('nextToStep2').disabled = true;
+            score = 0; // 重置分數回 0
+            updateScoreUI();
+        }
+
+        function resetStep2() {
+            statementSelections = {};
+            step2Verified = false;
+            statementsData.forEach(s => { statementSelections[s.id] = { activity: '', type: '' }; });
+            document.querySelectorAll('#statementsContainer .statement-item').forEach(row => {
+                row.classList.remove('correct-row', 'wrong-row');
+                const selects = row.querySelectorAll('select');
+                selects.forEach(sel => { sel.value = ""; sel.disabled = false; });
+                const fb = row.querySelector('.s-feedback');
+                fb.textContent = '';
+            });
+            document.getElementById('step2Feedback').textContent = '';
+            document.getElementById('nextToStep3').disabled = true;
+            score = 1; // 倒退回分數 1
+            updateScoreUI();
+        }
+
+        function resetStep3() {
+            quizAnswered = {};
+            currentQuizIndex = 0;
+            document.getElementById('step3Feedback').textContent = '';
+            document.getElementById('nextToStep4').disabled = true;
+            score = 2; // 倒退回分數 2
+            updateScoreUI();
+            renderShootingArena(); // 重新渲染靶場
+        }
+
+        // 綁定各關卡的返回重做按鈕
+        document.getElementById('btnBackTo1').addEventListener('click', () => { resetStep1(); switchStep(1); });
+        document.getElementById('btnBackTo2').addEventListener('click', () => { resetStep2(); switchStep(2); });
+        document.getElementById('btnBackTo3').addEventListener('click', () => { resetStep3(); switchStep(3); });
+        // =======================================================
+
+        updateScoreUI(); switchStep(1);
+    })();
+</script>
+</body>
+</html>
